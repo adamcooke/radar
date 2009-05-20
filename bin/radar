@@ -1,0 +1,37 @@
+#!/usr/bin/env ruby
+
+puts "\e[36;40mRadar CLI\e[0m"
+
+config_file = File.join(ENV['HOME'], '.radar')
+if File.exist?(config_file)
+  load config_file
+else
+  $stderr.puts "Radar configuration not found at #{config_file}"
+  Process.exit(1)
+end
+
+unless RADAR_PATH
+  $stderr.puts "RADAR_PATH is not defined"
+  Process.exit(1)
+end
+
+## Command Format: radar {command} {id}
+command, id = ARGV
+
+if command.nil? or command == ''
+  $stderr.puts "Command not set"
+  Process.exit(1)
+end
+
+rakefile = File.join(RADAR_PATH, "Rakefile")
+unless File.exist?(rakefile)
+  $stderr.puts "Rakefile does not exist at #{rakefile}"
+  Process.exit(1)
+end
+
+rake = "rake -f #{rakefile} radar:#{command}"
+unless id.nil?
+  rake << " id=#{id}"
+end
+
+exec(rake)
